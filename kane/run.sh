@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Runs every Kane check in kane/ against the live app and saves the evidence.
 # Usage:  bash kane/run.sh 01 https://your-live-url
+# Watch the browser (for recording a demo):  SHOW=1 bash kane/run.sh 04 https://your-live-url
 set -u
 RUN="${1:?run number, e.g. 01}"
 URL="${2:?live URL of the app}"
@@ -12,12 +13,14 @@ if [ -e "$OUT" ]; then
 fi
 mkdir -p "$OUT"
 touch "$OUT/.started"
+HEADLESS="--headless"
+[ "${SHOW:-0}" = "1" ] && HEADLESS=""
 
 # Pass the check files by name. A --match path pattern breaks on Windows,
 # where paths use backslashes (run-01 found zero checks because of this).
 kane-cli testrun run kane/*_test.md \
   --override-start-url "$URL" \
-  --headless --agent --on-failure continue \
+  $HEADLESS --agent --on-failure continue \
   --name "run-$RUN" < /dev/null \
   | tee "$OUT/results.ndjson"
 CODE=${PIPESTATUS[0]}
