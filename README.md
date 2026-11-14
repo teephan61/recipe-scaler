@@ -2,7 +2,7 @@
 
 Scale any recipe up or down, and swap cups, spoons, grams and ounces without doing the math in your head.
 
-Built by a former cook who spent too many shifts converting recipes by hand.
+Built by a cook in a healthcare kitchen, where scaling recipes and converting measures is part of every shift.
 
 **Live:** https://teephan61.github.io/recipe-scaler/
 
