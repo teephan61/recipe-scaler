@@ -1,0 +1,4 @@
+run: 01
+url: https://teephan61.github.io/recipe-scaler/
+date: 2026-11-14T20:58Z
+exit code: 2  (0 = all passed, 1 = something failed, 2 = setup/auth error, 3 = timeout)

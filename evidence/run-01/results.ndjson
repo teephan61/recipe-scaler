@@ -1,0 +1,2 @@
+{"type":"stream_start","cli_version":"0.10.4","surface":"testrun","pid":21684,"v":1,"ts":"2026-11-14T20:58:01.639Z"}
+{"type":"testrun_plan","members":[],"valid":false,"parallel":1,"v":1,"ts":"2026-11-14T20:58:01.657Z"}
