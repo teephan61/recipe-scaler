@@ -217,6 +217,61 @@
     return { value, unit };
   }
 
+
+  // ---- Singular / plural for counted items ("1 large egg", "2 large eggs") ----
+  // Container words get the plural, not the food: "2 cloves garlic", "2 cans tomatoes".
+  const CONTAINERS = ["clove", "can", "slice", "stick", "sprig", "bunch", "head", "piece",
+    "sheet", "strip", "stalk", "leaf", "package", "packet", "jar", "bottle", "box", "bag"];
+  const UNCOUNTABLE = ["salt", "pepper", "flour", "sugar", "garlic", "rice", "butter",
+    "water", "milk", "oil", "parsley", "cilantro", "basil", "thyme", "spinach", "lettuce"];
+  const IRREGULAR = { leaf: "leaves", loaf: "loaves", half: "halves", knife: "knives" };
+
+  function pluralize(w) {
+    const lw = w.toLowerCase();
+    if (IRREGULAR[lw]) return IRREGULAR[lw];
+    if (/(s|x|z|ch|sh)$/.test(lw)) return w + "es";
+    if (/[^aeiou]y$/.test(lw)) return w.slice(0, -1) + "ies";
+    if (/^(tomato|potato|mango)$/.test(lw)) return w + "es";
+    return w + "s";
+  }
+  function singularize(w) {
+    const lw = w.toLowerCase();
+    for (const [one, many] of Object.entries(IRREGULAR)) if (lw === many) return one;
+    if (/ies$/.test(lw)) return w.slice(0, -3) + "y";
+    if (/(oes|ches|shes|xes|sses|zes)$/.test(lw)) return w.slice(0, -2);
+    if (/[^su]s$/.test(lw) && !/(ss|us|is)$/.test(lw)) return w.slice(0, -1);
+    return w;
+  }
+  function looksPlural(w) { return singularize(w) !== w; }
+
+  function matchCount(text, shown) {
+    const n = parseNumber(shown);
+    if (!isFinite(n)) return text;
+    const many = n > 1;
+    // Only touch the head phrase: before any comma, after a leading "(14 oz)".
+    const m = text.match(/^(\([^)]*\)\s*)?([^,(]*)(.*)$/);
+    const lead = m[1] || "", head = m[2], tail = m[3];
+    const words = head.split(/(\s+)/);
+    // Pick the word to change: a container word if there is one, else the last word.
+    let idx = -1;
+    for (let i = 0; i < words.length; i += 2) {
+      const base = singularize(words[i]).toLowerCase();
+      if (CONTAINERS.includes(base)) { idx = i; break; }
+    }
+    if (idx === -1) {
+      for (let i = words.length - 1; i >= 0; i -= 2) if (words[i].trim()) { idx = i; break; }
+    }
+    if (idx === -1) return text;
+    const w = words[idx];
+    const bare = w.replace(/[^A-Za-z]+$/, ""), punct = w.slice(bare.length);
+    if (!bare || UNCOUNTABLE.includes(singularize(bare).toLowerCase())) return text;
+    let out = bare;
+    if (many && !looksPlural(bare)) out = pluralize(bare);
+    if (!many && looksPlural(bare)) out = singularize(bare);
+    words[idx] = out + punct;
+    return lead + words.join("") + tail;
+  }
+
   // ---- Public API --------------------------------------------------------------
   function scaleLine(line, factor, mode) {
     const p = parseLine(line);
@@ -225,7 +280,10 @@
     const b = p.qty2 !== null ? p.qty2 * factor : null;
     if (!p.unit) {
       const amt = toFraction(a) + (b !== null ? "-" + toFraction(b) : "");
-      return { text: (amt + " " + p.text).trim(), changed: factor !== 1 };
+      // Ranges ("2-3 cloves garlic") are always plural, so only fix single amounts.
+      const words = b === null ? matchCount(p.text, toFraction(a)) : p.text;
+      const text = (amt + " " + words).trim();
+      return { text, changed: text !== line.trim() };
     }
     const ca = convert(a, p.unit, mode, p.text);
     let amt = formatAmount(ca.value, ca.unit);
