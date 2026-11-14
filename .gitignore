@@ -1,0 +1,12 @@
+# secrets
+.env
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+# kane cli local cache (runs are copied into evidence/)
+.testmuai/
+# os
+.DS_Store
+Thumbs.db

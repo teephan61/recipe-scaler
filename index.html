@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Recipe Scaler</title>
+<style>
+  :root {
+    --bg: #faf6ef; --card: #ffffff; --ink: #2b2420; --muted: #7a6e64;
+    --line: #e8dfd2; --accent: #c2502b; --accent-ink: #ffffff; --soft: #fbeee6;
+    --ok: #2f7d4f; --err: #b3261e;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header { padding: 28px 20px 8px; max-width: 980px; margin: 0 auto; }
+  header h1 { margin: 0; font-size: 30px; letter-spacing: -0.5px; }
+  header p { margin: 4px 0 0; color: var(--muted); }
+  main { max-width: 980px; margin: 0 auto; padding: 12px 20px 40px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 760px) { main { grid-template-columns: 1fr; } }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
+  section.wide { grid-column: 1 / -1; }
+  h2 { margin: 0 0 12px; font-size: 19px; }
+  label { display: block; font-weight: 600; font-size: 14px; margin: 10px 0 4px; }
+  textarea, input, select { width: 100%; font: inherit; color: inherit; padding: 9px 11px;
+    border: 1px solid var(--line); border-radius: 9px; background: #fffdfa; }
+  textarea { min-height: 220px; resize: vertical; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 14px; }
+  textarea:focus, input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .quick { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  button { font: inherit; font-weight: 600; border-radius: 9px; padding: 9px 16px; cursor: pointer;
+    border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); }
+  button.ghost { background: transparent; color: var(--accent); }
+  button.link { border: none; background: none; color: var(--accent); padding: 0; font-weight: 500; text-decoration: underline; }
+  .actions { display: flex; gap: 10px; align-items: center; margin-top: 14px; }
+  .msg { margin-top: 12px; padding: 10px 12px; border-radius: 9px; background: #fdecea; color: var(--err); }
+  .factor { color: var(--muted); margin: -4px 0 10px; }
+  ul.result { list-style: none; padding: 0; margin: 0; }
+  ul.result li { padding: 8px 10px; border-bottom: 1px dashed var(--line); }
+  ul.result li.changed { background: var(--soft); }
+  ul.result li:last-child { border-bottom: none; }
+  .empty { color: var(--muted); }
+  .conv-out { margin-top: 12px; font-size: 22px; font-weight: 700; }
+  .hint { color: var(--muted); font-size: 13px; margin-top: 6px; }
+  footer { max-width: 980px; margin: 0 auto; padding: 0 20px 30px; color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Recipe Scaler</h1>
+  <p>Scale any recipe up or down, and swap cups, spoons, grams and ounces without the mental math.</p>
+</header>
+
+<main>
+  <section aria-labelledby="h-recipe">
+    <h2 id="h-recipe">Your recipe</h2>
+    <label for="ingredients">Ingredients (one per line)</label>
+    <textarea id="ingredients" placeholder="2 1/4 cups all-purpose flour&#10;1 tsp salt&#10;2 large eggs"></textarea>
+    <button class="link" id="example" type="button">Try an example</button>
+
+    <div class="row">
+      <div>
+        <label for="from">Original servings</label>
+        <input id="from" type="text" inputmode="decimal" value="4">
+      </div>
+      <div>
+        <label for="to">New servings</label>
+        <input id="to" type="text" inputmode="decimal" value="8">
+      </div>
+      <div>
+        <label for="mode">Units</label>
+        <select id="mode">
+          <option value="keep">As written</option>
+          <option value="metric">Metric (g, ml)</option>
+          <option value="us">US (cups, oz)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="quick" aria-label="Quick scale">
+      <button class="ghost" type="button" data-mult="0.5">Half</button>
+      <button class="ghost" type="button" data-mult="2">Double</button>
+      <button class="ghost" type="button" data-mult="3">Triple</button>
+    </div>
+
+    <div class="actions">
+      <button id="scale" type="button">Scale recipe</button>
+    </div>
+    <div id="recipe-msg" class="msg" role="alert" hidden></div>
+  </section>
+
+  <section aria-labelledby="h-result">
+    <h2 id="h-result">Scaled recipe</h2>
+    <p id="factor" class="factor" hidden></p>
+    <ul id="result" class="result"><li class="empty">Your scaled ingredients will show up here.</li></ul>
+  </section>
+
+  <section class="wide" aria-labelledby="h-conv">
+    <h2 id="h-conv">Measure converter</h2>
+    <div class="row">
+      <div>
+        <label for="c-amount">Amount</label>
+        <input id="c-amount" type="text" inputmode="decimal" value="1">
+      </div>
+      <div>
+        <label for="c-from">From</label>
+        <select id="c-from"></select>
+      </div>
+      <div>
+        <label for="c-to">To</label>
+        <select id="c-to"></select>
+      </div>
+    </div>
+    <label for="c-ingredient">Ingredient (needed for cups ↔ grams)</label>
+    <input id="c-ingredient" type="text" placeholder="e.g. flour, sugar, butter, milk">
+    <div class="actions"><button id="convert" type="button">Convert</button></div>
+    <div id="conv-out" class="conv-out" aria-live="polite"></div>
+    <div id="conv-msg" class="msg" role="alert" hidden></div>
+    <p class="hint">Weights for cups use common kitchen averages. Scoop-and-level flour can vary by about 10%.</p>
+  </section>
+</main>
+<footer>Built with Claude Code, verified with Kane CLI.</footer>
+
+<script src="scaler.js"></script>
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const EXAMPLE = [
+    "2 1/4 cups all-purpose flour", "1 tsp baking soda", "1 tsp salt",
+    "1 cup butter, softened", "3/4 cup granulated sugar", "3/4 cup packed brown sugar",
+    "2 large eggs", "2 tsp vanilla extract", "2 cups chocolate chips",
+  ].join("\n");
+
+  function showMsg(el, text) { el.textContent = text; el.hidden = !text; }
+
+  function renderScale() {
+    const res = Scaler.scaleRecipe($("ingredients").value, $("from").value, $("to").value, $("mode").value);
+    const list = $("result");
+    list.innerHTML = "";
+    if (res.error) {
+      showMsg($("recipe-msg"), res.error);
+      $("factor").hidden = true;
+      list.innerHTML = '<li class="empty">Your scaled ingredients will show up here.</li>';
+      return;
+    }
+    showMsg($("recipe-msg"), "");
+    $("factor").textContent = "Scale factor: " + Scaler.toFraction(res.factor) + "×";
+    $("factor").hidden = false;
+    for (const line of res.lines) {
+      const li = document.createElement("li");
+      li.textContent = line.text;
+      if (line.changed) li.className = "changed";
+      list.appendChild(li);
+    }
+  }
+
+  $("scale").addEventListener("click", renderScale);
+  $("mode").addEventListener("change", () => { if ($("ingredients").value.trim()) renderScale(); });
+  $("example").addEventListener("click", () => { $("ingredients").value = EXAMPLE; renderScale(); });
+  document.querySelectorAll("[data-mult]").forEach((b) => b.addEventListener("click", () => {
+    const from = Scaler.parseNumber($("from").value);
+    if (from > 0) $("to").value = String(+(from * +b.dataset.mult).toFixed(2));
+    renderScale();
+  }));
+
+  // Converter
+  const UNIT_NAMES = [["tsp", "teaspoon (tsp)"], ["tbsp", "tablespoon (tbsp)"], ["cup", "cup"],
+    ["floz", "fluid ounce (fl oz)"], ["ml", "millilitre (ml)"], ["l", "litre (L)"],
+    ["g", "gram (g)"], ["kg", "kilogram (kg)"], ["oz", "ounce (oz)"], ["lb", "pound (lb)"]];
+  for (const sel of [$("c-from"), $("c-to")]) {
+    for (const [v, t] of UNIT_NAMES) sel.add(new Option(t, v));
+  }
+  $("c-from").value = "cup"; $("c-to").value = "g";
+  $("convert").addEventListener("click", () => {
+    const r = Scaler.convertMeasure($("c-amount").value, $("c-from").value, $("c-to").value, $("c-ingredient").value);
+    if (r.error) { $("conv-out").textContent = ""; showMsg($("conv-msg"), r.error); return; }
+    showMsg($("conv-msg"), "");
+    $("conv-out").textContent = "= " + r.text;
+  });
+})();
+</script>
+</body>
+</html>
