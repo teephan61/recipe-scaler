@@ -1,0 +1,25 @@
+{
+  "test_id": "8fa0da43-719e-4905-8f71-6c2bcf7f6fdb",
+  "project_id": "01M7DXYNZ5YFBN8KJK02KFQRDM",
+  "folder_id": "01M7DXYP69K3EGQPA08R8T7ZEP",
+  "org_id": "3433161",
+  "session_name": "04-metric",
+  "commit_id": "bd86cbdd-81d4-467b-9c97-c7ee51b97d06",
+  "testcase_id": "01M7DYF7YJ9WKN6K42J6QY8C0G",
+  "executions": [
+    {
+      "execution_id": "093888e0-4d90-41f3-a0b9-6d439360da41",
+      "run_kind": "author",
+      "status": "passed",
+      "valid": true,
+      "at": "2026-11-14T21:14:08.821Z"
+    },
+    {
+      "execution_id": "18d2217f-4017-450a-baae-4af2ab7b19a7",
+      "run_kind": "author",
+      "status": "passed",
+      "at": "2026-11-14T21:18:35.303Z",
+      "uploaded": true
+    }
+  ]
+}

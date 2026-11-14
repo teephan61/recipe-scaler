@@ -1,0 +1,25 @@
+{
+  "test_id": "75c5b7ca-964c-4f6d-8479-fa8bd8df56cd",
+  "project_id": "01M7DXYNZ5YFBN8KJK02KFQRDM",
+  "folder_id": "01M7DXYP69K3EGQPA08R8T7ZEP",
+  "org_id": "3433161",
+  "session_name": "03-spoon-step-up",
+  "commit_id": "6bbdc27c-0ca9-40fe-9888-a9d12b6abff8",
+  "testcase_id": "01M7DYCA014S1XA7ZB928T8E9Z",
+  "executions": [
+    {
+      "execution_id": "29d6e145-29ab-4dad-9a9c-b8fac69cb422",
+      "run_kind": "author",
+      "status": "passed",
+      "valid": true,
+      "at": "2026-11-14T21:12:26.318Z"
+    },
+    {
+      "execution_id": "18d2217f-4017-450a-baae-4af2ab7b19a7",
+      "run_kind": "author",
+      "status": "passed",
+      "at": "2026-11-14T21:18:35.300Z",
+      "uploaded": true
+    }
+  ]
+}
