@@ -13,7 +13,9 @@ fi
 mkdir -p "$OUT"
 touch "$OUT/.started"
 
-kane-cli testrun run --match '^kane/' \
+# Pass the check files by name. A --match path pattern breaks on Windows,
+# where paths use backslashes (run-01 found zero checks because of this).
+kane-cli testrun run kane/*_test.md \
   --override-start-url "$URL" \
   --headless --agent --on-failure continue \
   --name "run-$RUN" < /dev/null \
