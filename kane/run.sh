@@ -27,6 +27,10 @@ if [ -d .testmuai/evidence ]; then
   find .testmuai/evidence -newer "$OUT/.started" -maxdepth 1 -name '*.evidence*' \
     -exec cp -r {} "$OUT/" \;
 fi
+# Kane writes a step-by-step Result.md per check into kane/output-*/; keep it with this run
+for d in kane/output-*/; do
+  [ -d "$d" ] && mv "$d" "$OUT/$(basename "$d")"
+done
 rm -f "$OUT/.started"
 
 {
