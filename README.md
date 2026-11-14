@@ -4,7 +4,7 @@ Scale any recipe up or down, and swap cups, spoons, grams and ounces without doi
 
 Built by a former cook who spent too many shifts converting recipes by hand.
 
-**Live:** _coming soon_
+**Live:** https://teephan61.github.io/recipe-scaler/
 
 ## What it does
 
